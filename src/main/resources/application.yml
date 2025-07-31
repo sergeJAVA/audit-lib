@@ -1,7 +1,3 @@
 spring:
   application:
     name: audit-lib
-
-audit:
-  console:
-    enabled: true

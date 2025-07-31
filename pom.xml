@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.webbee</groupId>
 	<artifactId>audit-lib</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.6-SNAPSHOT</version>
 	<name>audit-lib</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -92,6 +92,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.5.4</version> <executions>
+				<execution>
+					<id>repackage</id>
+					<goals>
+						<goal>repackage</goal>
+					</goals>
+					<configuration>
+						<skip>true</skip>
+					</configuration>
+				</execution>
+			</executions>
 			</plugin>
 		</plugins>
 	</build>
