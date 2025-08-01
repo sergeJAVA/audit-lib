@@ -28,7 +28,9 @@ class HttpLoggingFilterTest {
         LoginRequest request = new LoginRequest("Serega", "123");
         mockMvc.perform(post("/auth/signin")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .param("token", "testToken")
+                        .param("testParam", "test"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").exists());
     }

@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Order(1)
@@ -43,7 +44,8 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
 
     private void logRequest(ContentCachingRequestWrapper request, ContentCachingResponseWrapper response,
                             String requestBody, String responseBody) {
-        String url = request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        String queryString = getQueryString(request);
+        String url = request.getRequestURI() + (queryString != null && !queryString.isEmpty() ? "?" + queryString : "");
         String logMessage = String.format("%s Incoming %s %d %s RequestBody=%s ResponseBody=%s",
                 LocalDateTime.now().format(DATE_TIME_FORMATTER),
                 request.getMethod(),
@@ -62,6 +64,21 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         } catch (IOException e) {
             return "{}";
         }
+    }
+
+    private String getQueryString(HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        if (queryString == null && !request.getParameterMap().isEmpty()) {
+            queryString = request.getParameterMap().entrySet()
+                    .stream()
+                    .flatMap(entry -> {
+                        String key = entry.getKey();
+                        String[] values = entry.getValue();
+                        return Arrays.stream(values).map(value -> key + "=" + value);
+                    })
+                    .collect(Collectors.joining("&"));
+        }
+        return queryString;
     }
 
     private String getResponseBody(ContentCachingResponseWrapper response) {
