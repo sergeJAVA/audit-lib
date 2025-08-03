@@ -30,7 +30,9 @@ class HttpLoggingFilterTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request))
                         .param("token", "testToken")
-                        .param("testParam", "test"))
+                        .param("testParam", "test")
+                        .param("param3", "test")
+                        .param("param4", "test"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").exists());
     }

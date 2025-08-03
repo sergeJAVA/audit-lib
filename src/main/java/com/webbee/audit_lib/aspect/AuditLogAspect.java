@@ -28,8 +28,16 @@ public class AuditLogAspect {
         String id = ID.get();
         String methodName = joinPoint.getSignature().getName();
         Level logLevel = toSlf4jLevel(auditLog.logLevel());
+        String time = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+        String args = Arrays.toString(joinPoint.getArgs());
+
         LOGGER.atLevel(logLevel).log("{} {} START {} {} args = {}",
-                LocalDateTime.now().format(DATE_TIME_FORMATTER), logLevel.toString(), id, methodName, Arrays.toString(joinPoint.getArgs()));
+                time,
+                logLevel.toString(),
+                id,
+                methodName,
+                args
+        );
     }
 
     @AfterReturning(pointcut = "@annotation(auditLog)", returning = "result")
@@ -37,8 +45,15 @@ public class AuditLogAspect {
         String id = ID.get();
         String methodName = joinPoint.getSignature().getName();
         Level logLevel = toSlf4jLevel(auditLog.logLevel());
+        String time = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+
         LOGGER.atLevel(logLevel).log("{} {} END {} {} result = {}",
-                LocalDateTime.now().format(DATE_TIME_FORMATTER), logLevel.toString(), id, methodName, result);
+                time,
+                logLevel.toString(),
+                id,
+                methodName,
+                result
+        );
     }
 
     @AfterThrowing(pointcut = "@annotation(auditLog)", throwing = "exception")
@@ -46,8 +61,16 @@ public class AuditLogAspect {
         String id = ID.get();
         String methodName = joinPoint.getSignature().getName();
         Level logLevel = toSlf4jLevel(auditLog.logLevel());
+        String time = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+
         LOGGER.atLevel(logLevel).log("{} {} ERROR {} {} error = {}",
-                LocalDateTime.now().format(DATE_TIME_FORMATTER), logLevel.toString(), id, methodName, exception.getMessage(), exception);;
+                time,
+                logLevel.toString(),
+                id,
+                methodName,
+                exception.getMessage(),
+                exception
+        );
     }
 
     private Level toSlf4jLevel(LogLevel springLevel) {

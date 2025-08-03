@@ -1,22 +1,40 @@
 package com.webbee.audit_lib.interceptor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webbee.audit_lib.model.HttpLog;
+import com.webbee.audit_lib.util.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingHttpLoggingInterceptor.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private ApplicationProperties applicationProperties;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
@@ -38,6 +56,27 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
             );
             LOGGER.info(logMessage);
 
+            if (applicationProperties.isKafkaEnabled()) {
+                try {
+                    HttpLog kafkaLog = new HttpLog();
+                    kafkaLog.setTimestamp(LocalDateTime.now());
+                    kafkaLog.setType("Outgoing");
+                    kafkaLog.setMethod(request.getMethod().toString());
+                    kafkaLog.setStatus(bufferedResponse.getStatusCode().value());
+
+                    String path = request.getURI().toString();
+                    kafkaLog.setPath(path);
+                    kafkaLog.setQueryParams(getQueryParamsMap(path));
+
+                    kafkaLog.setRequestBody(requestBody);
+                    kafkaLog.setResponseBody(responseBody);
+
+                    kafkaTemplate.send(applicationProperties.getKafkaTopic(), objectMapper.writeValueAsString(kafkaLog));
+                } catch (JsonProcessingException e) {
+                    LOGGER.error("Error serializing HttpLog to Kafka", e);
+                }
+            }
+
             return bufferedResponse;
 
         } catch (IOException e) {
@@ -52,6 +91,14 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
             );
             throw e;
         }
+    }
+
+    private Map<String, String> getQueryParamsMap(String fullPath) {
+        return fullPath.contains("?") ?
+                Stream.of(fullPath.split("\\?")[1].split("&"))
+                        .map(param -> param.split("="))
+                        .collect(Collectors.toMap(p -> p[0], p -> p[1]))
+                : null;
     }
 
 }

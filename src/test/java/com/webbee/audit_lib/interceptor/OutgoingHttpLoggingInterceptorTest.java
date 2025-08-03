@@ -29,7 +29,7 @@ public class OutgoingHttpLoggingInterceptorTest {
 
     @Test
     void testInterceptorLogsSuccessfulRequest() {
-        String url = "http://test-api.com/users";
+        String url = "http://test-api?testPam=34&token=SomeToken&code=110";
         String requestBody = "{\"id\":1, \"name\":\"test\"}";
         String responseBody = "{\"status\":\"success\"}";
 
