@@ -33,5 +33,4 @@ public class TestService {
         kafkaTemplate.send(producerRecord);
     }
 
-
 }

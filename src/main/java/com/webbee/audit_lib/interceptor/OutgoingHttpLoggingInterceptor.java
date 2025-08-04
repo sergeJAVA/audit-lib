@@ -1,8 +1,6 @@
 package com.webbee.audit_lib.interceptor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webbee.audit_lib.model.HttpLog;
+import com.webbee.audit_lib.service.HttpAuditService;
 import com.webbee.audit_lib.util.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +27,10 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
-
     @Autowired
     private ApplicationProperties applicationProperties;
-
     @Autowired
-    private ObjectMapper objectMapper;
+    private HttpAuditService httpAuditService;
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
@@ -57,24 +53,14 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
             LOGGER.info(logMessage);
 
             if (applicationProperties.isKafkaEnabled()) {
-                try {
-                    HttpLog kafkaLog = new HttpLog();
-                    kafkaLog.setTimestamp(LocalDateTime.now());
-                    kafkaLog.setType("Outgoing");
-                    kafkaLog.setMethod(request.getMethod().toString());
-                    kafkaLog.setStatus(bufferedResponse.getStatusCode().value());
+                httpAuditService.logOutgoingRequest(
+                        request.getMethod().toString(),
+                        request.getURI(),
+                        bufferedResponse.getStatusCode().value(),
+                        requestBody,
+                        responseBody
+                );
 
-                    String path = request.getURI().toString();
-                    kafkaLog.setPath(path);
-                    kafkaLog.setQueryParams(getQueryParamsMap(path));
-
-                    kafkaLog.setRequestBody(requestBody);
-                    kafkaLog.setResponseBody(responseBody);
-
-                    kafkaTemplate.send(applicationProperties.getKafkaTopic(), objectMapper.writeValueAsString(kafkaLog));
-                } catch (JsonProcessingException e) {
-                    LOGGER.error("Error serializing HttpLog to Kafka", e);
-                }
             }
 
             return bufferedResponse;
