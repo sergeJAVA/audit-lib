@@ -9,24 +9,21 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+/**
+ * Перехватчик исходящих RestTemplate запросов.
+ */
 public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingHttpLoggingInterceptor.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
     private ApplicationProperties applicationProperties;
     @Autowired
@@ -77,14 +74,6 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
             );
             throw e;
         }
-    }
-
-    private Map<String, String> getQueryParamsMap(String fullPath) {
-        return fullPath.contains("?") ?
-                Stream.of(fullPath.split("\\?")[1].split("&"))
-                        .map(param -> param.split("="))
-                        .collect(Collectors.toMap(p -> p[0], p -> p[1]))
-                : null;
     }
 
 }

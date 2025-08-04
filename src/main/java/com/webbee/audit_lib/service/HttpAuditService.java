@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Сервис для отправки HTTP-логов в Kafka.
+ */
 public class HttpAuditService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpAuditService.class);
@@ -25,6 +28,9 @@ public class HttpAuditService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    /**
+     * Отправка залогированного Outgoing HTTP-запроса в Kafka.
+     */
     public void logOutgoingRequest(String method, URI uri, int status, String requestBody, String responseBody) {
         try {
             HttpLog kafkaLog = new HttpLog();
@@ -34,6 +40,29 @@ public class HttpAuditService {
             kafkaLog.setStatus(status);
 
             String path = uri.toString();
+            kafkaLog.setPath(path);
+            kafkaLog.setQueryParams(getQueryParamsMap(path));
+
+            kafkaLog.setRequestBody(requestBody);
+            kafkaLog.setResponseBody(responseBody);
+            kafkaTemplate.send(applicationProperties.getKafkaTopic(),"2", objectMapper.writeValueAsString(kafkaLog));
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Error serializing HttpLog to Kafka", e);
+        }
+    }
+
+    /**
+     * Отправка залогированного Incoming HTTP-запроса в Kafka.
+     */
+    public void logIncomingRequest(String method, String uri, int status, String requestBody, String responseBody) {
+        try {
+            HttpLog kafkaLog = new HttpLog();
+            kafkaLog.setTimestamp(LocalDateTime.now());
+            kafkaLog.setType("Incoming");
+            kafkaLog.setMethod(method);
+            kafkaLog.setStatus(status);
+
+            String path = uri;
             kafkaLog.setPath(path);
             kafkaLog.setQueryParams(getQueryParamsMap(path));
 

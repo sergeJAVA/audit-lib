@@ -2,6 +2,9 @@ package com.webbee.audit_lib.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * Класс, который используют для отправки лога о методе в формате JSON в Kafka.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MethodLog {
 
@@ -18,6 +21,9 @@ public class MethodLog {
 
     }
 
+    /**
+     * Метод для создания START лога.
+     */
     public void createStartLog(String localDateTime,
                                String logLevel,
                                String logType,
@@ -32,6 +38,9 @@ public class MethodLog {
         this.logType = logType;
     }
 
+    /**
+     * Метод для создания END лога.
+     */
     public void createEndLog(String localDateTime,
                              String logLevel,
                              String logType,
@@ -46,6 +55,9 @@ public class MethodLog {
         this.result = result;
     }
 
+    /**
+     * Метод для создания ERROR лога.
+     */
     public void createErrorLog(String localDateTime,
                              String logLevel,
                              String logType,

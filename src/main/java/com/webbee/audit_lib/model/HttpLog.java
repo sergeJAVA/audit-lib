@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * Класс, который используют для отправки HTTP-лога в формате JSON в Kafka.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HttpLog {
 

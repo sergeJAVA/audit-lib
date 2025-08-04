@@ -1,8 +1,7 @@
 package com.webbee.audit_lib.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webbee.audit_lib.model.HttpLog;
+import com.webbee.audit_lib.service.HttpAuditService;
 import com.webbee.audit_lib.util.ApplicationProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -27,18 +25,18 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Фильтр для логирования входящих HTTP-запросов
+ */
 @Order(1)
 public class HttpLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LogManager.getLogger(HttpLoggingFilter.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    @Autowired
     private ApplicationProperties applicationProperties;
     @Autowired
-    private ObjectMapper objectMapper;
+    private HttpAuditService httpAuditService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -70,25 +68,12 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         LOGGER.info(logMessage);
 
         if (applicationProperties.isKafkaEnabled()) {
-            try {
-                HttpLog kafkaLog = new HttpLog();
-                kafkaLog.setTimestamp(LocalDateTime.now());
-                kafkaLog.setType("Incoming");
-                kafkaLog.setMethod(request.getMethod());
-                kafkaLog.setStatus(response.getStatus());
-
-                String path = request.getRequestURI();
-                Map<String, String> queryParams = getQueryParamsMap(queryString);
-                kafkaLog.setPath(path);
-                kafkaLog.setQueryParams(queryParams);
-
-                kafkaLog.setRequestBody(requestBody);
-                kafkaLog.setResponseBody(responseBody);
-
-                kafkaTemplate.send(applicationProperties.getKafkaTopic(), objectMapper.writeValueAsString(kafkaLog));
-            } catch (JsonProcessingException e) {
-                LOGGER.error("Error sending HttpLog to Kafka", e);
-            }
+            httpAuditService.logIncomingRequest(request.getMethod(),
+                    url,
+                    response.getStatus(),
+                    requestBody.isEmpty() ? "{}" : requestBody,
+                    responseBody.isEmpty() ? "{}" : responseBody
+            );
         }
     }
 
