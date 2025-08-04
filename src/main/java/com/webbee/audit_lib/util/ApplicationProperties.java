@@ -31,4 +31,5 @@ public class ApplicationProperties {
     public void setKafkaTopic(String kafkaTopic) {
         this.kafkaTopic = kafkaTopic;
     }
+
 }
