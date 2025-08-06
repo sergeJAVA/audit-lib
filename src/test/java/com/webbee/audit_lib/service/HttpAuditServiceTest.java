@@ -45,41 +45,41 @@ class HttpAuditServiceTest {
     }
 
     @Test
-    void logOutgoingRequest_ShouldSendToKafka() throws URISyntaxException, JsonProcessingException {
+    void logOutgoingRequestToKafka_ShouldSendToKafka() throws URISyntaxException, JsonProcessingException {
         String method = "GET";
         URI uri = new URI("http://test.ru?param1=value1&param2=value2");
         int status = 200;
 
         when(objectMapper.writeValueAsString(any(HttpLog.class))).thenReturn("json-string");
 
-        httpAuditService.logOutgoingRequest(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
+        httpAuditService.logOutgoingRequestToKafka(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
 
         verify(kafkaTemplate, times(1)).send(KAFKA_TOPIC, "2", "json-string");
         verify(objectMapper, times(1)).writeValueAsString(any(HttpLog.class));
     }
 
     @Test
-    void logOutgoingRequest_ShouldHandleUri_WithoutQueryParams() throws URISyntaxException, JsonProcessingException {
+    void logOutgoingRequestToKafka_ShouldHandleUri_WithoutQueryParams() throws URISyntaxException, JsonProcessingException {
         String method = "POST";
         URI uri = new URI("http://test.com");
         int status = 201;
 
         when(objectMapper.writeValueAsString(any(HttpLog.class))).thenReturn("json-string");
 
-        httpAuditService.logOutgoingRequest(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
+        httpAuditService.logOutgoingRequestToKafka(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
 
         verify(kafkaTemplate, times(1)).send(KAFKA_TOPIC, "2", "json-string");
     }
 
     @Test
-    void logOutgoingRequest_ShouldHandleJsonProcessingException() throws URISyntaxException, JsonProcessingException {
+    void logOutgoingRequestToKafka_ShouldHandleJsonProcessingException() throws URISyntaxException, JsonProcessingException {
         String method = "PUT";
         URI uri = new URI("http://test.uk");
         int status = 400;
 
         when(objectMapper.writeValueAsString(any(HttpLog.class))).thenThrow(JsonProcessingException.class);
 
-        httpAuditService.logOutgoingRequest(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
+        httpAuditService.logOutgoingRequestToKafka(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
 
         verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
     }

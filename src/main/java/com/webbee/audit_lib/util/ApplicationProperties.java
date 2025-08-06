@@ -1,9 +1,7 @@
 package com.webbee.audit_lib.util;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ApplicationProperties {
 
     @Value("${audit.kafka.enabled:false}")
@@ -12,7 +10,7 @@ public class ApplicationProperties {
     @Value("${audit.kafka.topic:audit-log}")
     private String kafkaTopic;
 
-    private ApplicationProperties() {
+    public ApplicationProperties() {
 
     }
 

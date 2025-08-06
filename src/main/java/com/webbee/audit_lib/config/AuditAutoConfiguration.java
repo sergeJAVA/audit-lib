@@ -4,6 +4,7 @@ import com.webbee.audit_lib.aspect.AuditLogAspect;
 import com.webbee.audit_lib.filter.HttpLoggingFilter;
 import com.webbee.audit_lib.interceptor.OutgoingHttpLoggingInterceptor;
 import com.webbee.audit_lib.service.HttpAuditService;
+import com.webbee.audit_lib.util.ApplicationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -66,6 +67,11 @@ public class AuditAutoConfiguration {
     @Bean
     public HttpAuditService httpAuditService() {
         return new HttpAuditService();
+    }
+
+    @Bean
+    public ApplicationProperties applicationProperties() {
+        return new ApplicationProperties();
     }
 
 }

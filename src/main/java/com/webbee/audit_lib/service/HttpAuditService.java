@@ -7,10 +7,12 @@ import com.webbee.audit_lib.util.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 public class HttpAuditService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpAuditService.class);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
@@ -31,7 +34,7 @@ public class HttpAuditService {
     /**
      * Отправка залогированного Outgoing HTTP-запроса в Kafka.
      */
-    public void logOutgoingRequest(String method, URI uri, int status, String requestBody, String responseBody) {
+    public void logOutgoingRequestToKafka(String method, URI uri, int status, String requestBody, String responseBody) {
         try {
             HttpLog kafkaLog = new HttpLog();
             kafkaLog.setTimestamp(LocalDateTime.now());
@@ -54,7 +57,7 @@ public class HttpAuditService {
     /**
      * Отправка залогированного Incoming HTTP-запроса в Kafka.
      */
-    public void logIncomingRequest(String method, String uri, int status, String requestBody, String responseBody) {
+    public void logIncomingRequestToKafka(String method, String uri, int status, String requestBody, String responseBody) {
         try {
             HttpLog kafkaLog = new HttpLog();
             kafkaLog.setTimestamp(LocalDateTime.now());
@@ -72,6 +75,41 @@ public class HttpAuditService {
         } catch (JsonProcessingException e) {
             LOGGER.error("Error serializing HttpLog to Kafka", e);
         }
+    }
+
+    /**
+     * Метод для отправки логов об исходящих запросах в консоль.
+     */
+    public void logOutgoingRequestToConsole(LocalDateTime time,
+                                            HttpMethod httpMethod,
+                                            int status,
+                                            URI uri,
+                                            String requestBody,
+                                            String responseBody) {
+        String logMessage = String.format("%s Outgoing %s %d %s RequestBody = %s ResponseBody = %s",
+                time.format(DATE_TIME_FORMATTER),
+                httpMethod,
+                status,
+                uri,
+                requestBody.isEmpty() ? "{}" : requestBody,
+                responseBody.isEmpty() ? "{}" : responseBody
+        );
+        LOGGER.info(logMessage);
+    }
+
+    public void logOutgoingRequestToConsoleError(LocalDateTime time,
+                                            HttpMethod httpMethod,
+                                            URI uri,
+                                            String requestBody,
+                                            Exception exception) {
+        LOGGER.error("{} Outgoing {} {} RequestBody = {} Error = {}",
+                time.format(DATE_TIME_FORMATTER),
+                httpMethod,
+                uri,
+                requestBody.isEmpty() ? "{}" : requestBody,
+                exception.getMessage(),
+                exception
+        );
     }
 
     private Map<String, String> getQueryParamsMap(String fullPath) {

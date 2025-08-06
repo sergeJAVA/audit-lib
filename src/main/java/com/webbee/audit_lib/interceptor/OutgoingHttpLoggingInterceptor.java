@@ -39,18 +39,15 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
             String requestBody = new String(body, StandardCharsets.UTF_8);
             String responseBody = StreamUtils.copyToString(bufferedResponse.getBody(), StandardCharsets.UTF_8);
 
-            String logMessage = String.format("%s Outgoing %s %d %s RequestBody = %s ResponseBody = %s",
-                    LocalDateTime.now().format(DATE_TIME_FORMATTER),
+            httpAuditService.logOutgoingRequestToConsole(LocalDateTime.now(),
                     request.getMethod(),
                     bufferedResponse.getStatusCode().value(),
                     request.getURI(),
-                    requestBody.isEmpty() ? "{}" : requestBody,
-                    responseBody.isEmpty() ? "{}" : responseBody
-            );
-            LOGGER.info(logMessage);
+                    requestBody,
+                    responseBody);
 
             if (applicationProperties.isKafkaEnabled()) {
-                httpAuditService.logOutgoingRequest(
+                httpAuditService.logOutgoingRequestToKafka(
                         request.getMethod().toString(),
                         request.getURI(),
                         bufferedResponse.getStatusCode().value(),
@@ -64,12 +61,12 @@ public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestIntercep
 
         } catch (IOException e) {
             String requestBody = new String(body, StandardCharsets.UTF_8);
-            LOGGER.error("{} Outgoing {} {} RequestBody = {} Error = {}",
-                    LocalDateTime.now().format(DATE_TIME_FORMATTER),
+            httpAuditService.logOutgoingRequestToConsoleError
+            (
+                    LocalDateTime.now(),
                     request.getMethod(),
                     request.getURI(),
-                    requestBody.isEmpty() ? "{}" : requestBody,
-                    e.getMessage(),
+                    requestBody,
                     e
             );
             throw e;

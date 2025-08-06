@@ -68,7 +68,7 @@ public class HttpLoggingFilter extends OncePerRequestFilter {
         LOGGER.info(logMessage);
 
         if (applicationProperties.isKafkaEnabled()) {
-            httpAuditService.logIncomingRequest(request.getMethod(),
+            httpAuditService.logIncomingRequestToKafka(request.getMethod(),
                     url,
                     response.getStatus(),
                     requestBody.isEmpty() ? "{}" : requestBody,
