@@ -1,9 +1,11 @@
 package com.webbee.audit_lib.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webbee.audit_lib.aspect.AuditLogAspect;
 import com.webbee.audit_lib.filter.HttpLoggingFilter;
 import com.webbee.audit_lib.interceptor.OutgoingHttpLoggingInterceptor;
 import com.webbee.audit_lib.service.HttpAuditService;
+import com.webbee.audit_lib.service.TransactionalProducer;
 import com.webbee.audit_lib.util.ApplicationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -23,8 +25,8 @@ public class AuditAutoConfiguration {
             havingValue = "true",
             matchIfMissing = true
     )
-    public AuditLogAspect auditLogAspect() {
-        return new AuditLogAspect();
+    public AuditLogAspect auditLogAspect(TransactionalProducer transactionalProducer) {
+        return new AuditLogAspect(transactionalProducer);
     }
 
     @Bean
@@ -65,8 +67,13 @@ public class AuditAutoConfiguration {
     }
 
     @Bean
-    public HttpAuditService httpAuditService() {
-        return new HttpAuditService();
+    public HttpAuditService httpAuditService(TransactionalProducer transactionalProducer, ObjectMapper objectMapper) {
+        return new HttpAuditService(transactionalProducer, applicationProperties(), objectMapper);
+    }
+
+    @Bean
+    public TransactionalProducer transactionalProducer() {
+        return new TransactionalProducer();
     }
 
     @Bean

@@ -10,6 +10,9 @@ public class ApplicationProperties {
     @Value("${audit.kafka.topic:audit-log}")
     private String kafkaTopic;
 
+    @Value("${audit.kafka.bootstrap.server:localhost:9094}")
+    private String kafkaAuditBootstrapServer;
+
     public ApplicationProperties() {
 
     }
@@ -28,6 +31,14 @@ public class ApplicationProperties {
 
     public void setKafkaTopic(String kafkaTopic) {
         this.kafkaTopic = kafkaTopic;
+    }
+
+    public String getKafkaAuditBootstrapServer() {
+        return kafkaAuditBootstrapServer;
+    }
+
+    public void setKafkaAuditBootstrapServer(String kafkaAuditBootstrapServer) {
+        this.kafkaAuditBootstrapServer = kafkaAuditBootstrapServer;
     }
 
 }

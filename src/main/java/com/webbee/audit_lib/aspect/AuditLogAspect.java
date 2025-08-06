@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webbee.audit_lib.annotation.AuditLog;
 import com.webbee.audit_lib.model.MethodLog;
+import com.webbee.audit_lib.service.TransactionalProducer;
 import com.webbee.audit_lib.util.ApplicationProperties;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -28,12 +29,17 @@ public class AuditLogAspect {
     private final static Logger LOGGER = LoggerFactory.getLogger(AuditLogAspect.class);
     private static final ThreadLocal<String> ID = ThreadLocal.withInitial(() -> UUID.randomUUID().toString());
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private final TransactionalProducer transactionalProducer;
     @Autowired
     private ApplicationProperties applicationProperties;
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
     private ObjectMapper objectMapper;
+
+    public AuditLogAspect(TransactionalProducer transactionalProducer) {
+        this.transactionalProducer = transactionalProducer;
+    }
 
     @Before("@annotation(auditLog)")
     public void logBefore(JoinPoint joinPoint, AuditLog auditLog) {
@@ -54,7 +60,11 @@ public class AuditLogAspect {
             MethodLog methodLog = new MethodLog();
             methodLog.createStartLog(time, logLevel.toString(), "START", id, methodName, args);
             try {
-                kafkaTemplate.send(applicationProperties.getKafkaTopic(), "1", objectMapper.writeValueAsString(methodLog));
+                transactionalProducer.sendInTransaction(
+                        applicationProperties.getKafkaTopic(),
+                        "1",
+                        objectMapper.writeValueAsString(methodLog)
+                );
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -79,7 +89,11 @@ public class AuditLogAspect {
             MethodLog methodLog = new MethodLog();
             methodLog.createEndLog(time, logLevel.toString(), "END", id, methodName, result);
             try {
-                kafkaTemplate.send(applicationProperties.getKafkaTopic(), "1", objectMapper.writeValueAsString(methodLog));
+                transactionalProducer.sendInTransaction(
+                        applicationProperties.getKafkaTopic(),
+                        "1",
+                        objectMapper.writeValueAsString(methodLog)
+                );
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -106,7 +120,11 @@ public class AuditLogAspect {
             MethodLog methodLog = new MethodLog();
             methodLog.createErrorLog(time, logLevel.toString(), "ERROR", id, methodName, exception.getMessage());
             try {
-                kafkaTemplate.send(applicationProperties.getKafkaTopic(), "1", objectMapper.writeValueAsString(methodLog));
+                transactionalProducer.sendInTransaction(
+                        applicationProperties.getKafkaTopic(),
+                        "1",
+                        objectMapper.writeValueAsString(methodLog)
+                );
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

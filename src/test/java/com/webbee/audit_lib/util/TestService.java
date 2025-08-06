@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ExecutionException;
+
 @Service
 public class TestService {
 
@@ -29,8 +31,8 @@ public class TestService {
     }
 
     @AuditLog
-    public void sendToKafka(ProducerRecord<String, String> producerRecord) {
-        kafkaTemplate.send(producerRecord);
+    public void sendToKafka(ProducerRecord<String, String> producerRecord) throws ExecutionException, InterruptedException {
+        kafkaTemplate.send(producerRecord).get();
     }
 
 }

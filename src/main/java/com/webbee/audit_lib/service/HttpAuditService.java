@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -24,12 +23,15 @@ public class HttpAuditService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpAuditService.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
-    private ApplicationProperties applicationProperties;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final TransactionalProducer transactionalProducer;
+    private final ApplicationProperties applicationProperties;
+    private final ObjectMapper objectMapper;
+
+    public HttpAuditService(TransactionalProducer transactionalProducer, ApplicationProperties applicationProperties, ObjectMapper objectMapper) {
+        this.transactionalProducer = transactionalProducer;
+        this.applicationProperties = applicationProperties;
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Отправка залогированного Outgoing HTTP-запроса в Kafka.
@@ -48,7 +50,11 @@ public class HttpAuditService {
 
             kafkaLog.setRequestBody(requestBody);
             kafkaLog.setResponseBody(responseBody);
-            kafkaTemplate.send(applicationProperties.getKafkaTopic(),"2", objectMapper.writeValueAsString(kafkaLog));
+            transactionalProducer.sendInTransaction(
+                    applicationProperties.getKafkaTopic(),
+                    "2",
+                    objectMapper.writeValueAsString(kafkaLog)
+            );
         } catch (JsonProcessingException e) {
             LOGGER.error("Error serializing HttpLog to Kafka", e);
         }
@@ -71,7 +77,11 @@ public class HttpAuditService {
 
             kafkaLog.setRequestBody(requestBody);
             kafkaLog.setResponseBody(responseBody);
-            kafkaTemplate.send(applicationProperties.getKafkaTopic(),"2", objectMapper.writeValueAsString(kafkaLog));
+            transactionalProducer.sendInTransaction(
+                    applicationProperties.getKafkaTopic(),
+                    "2",
+                    objectMapper.writeValueAsString(kafkaLog)
+            );
         } catch (JsonProcessingException e) {
             LOGGER.error("Error serializing HttpLog to Kafka", e);
         }

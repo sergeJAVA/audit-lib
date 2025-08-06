@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.ActiveProfiles;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class HttpAuditServiceTest {
 
     @Mock
@@ -28,6 +31,9 @@ class HttpAuditServiceTest {
 
     @Mock
     private ApplicationProperties applicationProperties;
+
+    @Mock
+    private TransactionalProducer transactionalProducer;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -54,7 +60,7 @@ class HttpAuditServiceTest {
 
         httpAuditService.logOutgoingRequestToKafka(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
 
-        verify(kafkaTemplate, times(1)).send(KAFKA_TOPIC, "2", "json-string");
+        verify(transactionalProducer, times(1)).sendInTransaction(KAFKA_TOPIC, "2", "json-string");
         verify(objectMapper, times(1)).writeValueAsString(any(HttpLog.class));
     }
 
@@ -68,7 +74,7 @@ class HttpAuditServiceTest {
 
         httpAuditService.logOutgoingRequestToKafka(method, uri, status, REQUEST_BODY, RESPONSE_BODY);
 
-        verify(kafkaTemplate, times(1)).send(KAFKA_TOPIC, "2", "json-string");
+        verify(transactionalProducer, times(1)).sendInTransaction(KAFKA_TOPIC, "2", "json-string");
     }
 
     @Test
