@@ -10,7 +10,7 @@ public class MethodLog {
 
     private String localDateTime;
     private String logLevel;
-    private String id;
+    private String correlationId;
     private String methodName;
     private String args;
     private String logType;
@@ -27,12 +27,12 @@ public class MethodLog {
     public void createStartLog(String localDateTime,
                                String logLevel,
                                String logType,
-                               String id,
+                               String correlationId ,
                                String methodName,
                                String args) {
         this.localDateTime = localDateTime;
         this.logLevel = logLevel;
-        this.id = id;
+        this.correlationId = correlationId ;
         this.methodName = methodName;
         this.args = args;
         this.logType = logType;
@@ -44,12 +44,12 @@ public class MethodLog {
     public void createEndLog(String localDateTime,
                              String logLevel,
                              String logType,
-                             String id,
+                             String correlationId ,
                              String methodName,
                              Object result) {
         this.localDateTime = localDateTime;
         this.logLevel = logLevel;
-        this.id = id;
+        this.correlationId = correlationId ;
         this.methodName = methodName;
         this.logType = logType;
         this.result = result;
@@ -61,12 +61,12 @@ public class MethodLog {
     public void createErrorLog(String localDateTime,
                              String logLevel,
                              String logType,
-                             String id,
+                             String correlationId ,
                              String methodName,
                              String exceptionMessage) {
         this.localDateTime = localDateTime;
         this.logLevel = logLevel;
-        this.id = id;
+        this.correlationId = correlationId ;
         this.methodName = methodName;
         this.logType = logType;
         this.exceptionMessage = exceptionMessage;
@@ -80,8 +80,8 @@ public class MethodLog {
         return logLevel;
     }
 
-    public String getId() {
-        return id;
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public String getMethodName() {
