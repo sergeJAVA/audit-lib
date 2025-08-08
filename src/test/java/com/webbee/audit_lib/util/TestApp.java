@@ -1,8 +1,8 @@
-package com.webbee.audit_lib;
+package com.webbee.audit_lib.util;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-class AuditLibApplicationTests {
+public class TestApp {
 
 }

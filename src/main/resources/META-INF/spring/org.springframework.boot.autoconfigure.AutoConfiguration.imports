@@ -1,0 +1,2 @@
+com.webbee.audit_lib.config.AuditAutoConfiguration
+com.webbee.audit_lib.config.KafkaProducerConfig
