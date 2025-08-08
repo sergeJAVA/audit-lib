@@ -10,7 +10,7 @@ public class ApplicationProperties {
     @Value("${audit.kafka.topic:audit-log}")
     private String kafkaTopic;
 
-    @Value("${audit.kafka.bootstrap.server:localhost:9094}")
+    @Value("${audit.kafka.bootstrap.server:localhost:9092}")
     private String kafkaAuditBootstrapServer;
 
     public ApplicationProperties() {
