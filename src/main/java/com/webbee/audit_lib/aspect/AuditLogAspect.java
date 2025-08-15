@@ -26,6 +26,7 @@ import java.util.UUID;
 @Aspect
 public class AuditLogAspect {
 
+    private final static String METHOD_LOG_KEY = "1";
     private final static Logger LOGGER = LoggerFactory.getLogger(AuditLogAspect.class);
     private static final ThreadLocal<String> ID = ThreadLocal.withInitial(() -> UUID.randomUUID().toString());
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -62,7 +63,7 @@ public class AuditLogAspect {
             try {
                 transactionalProducer.sendInTransaction(
                         applicationProperties.getKafkaTopic(),
-                        "1",
+                        METHOD_LOG_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {
@@ -91,7 +92,7 @@ public class AuditLogAspect {
             try {
                 transactionalProducer.sendInTransaction(
                         applicationProperties.getKafkaTopic(),
-                        "1",
+                        METHOD_LOG_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {
@@ -122,7 +123,7 @@ public class AuditLogAspect {
             try {
                 transactionalProducer.sendInTransaction(
                         applicationProperties.getKafkaTopic(),
-                        "1",
+                        METHOD_LOG_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {

@@ -2,8 +2,6 @@ package com.webbee.audit_lib.interceptor;
 
 import com.webbee.audit_lib.service.HttpAuditService;
 import com.webbee.audit_lib.util.ApplicationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -14,15 +12,11 @@ import org.springframework.util.StreamUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Перехватчик исходящих RestTemplate запросов.
  */
 public class OutgoingHttpLoggingInterceptor implements ClientHttpRequestInterceptor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingHttpLoggingInterceptor.class);
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Autowired
     private ApplicationProperties applicationProperties;

@@ -6,7 +6,6 @@ import com.webbee.audit_lib.model.HttpLog;
 import com.webbee.audit_lib.util.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
 import java.net.URI;
@@ -21,6 +20,7 @@ import java.util.stream.Stream;
  */
 public class HttpAuditService {
 
+    private static final String KAFKA_LOG_KEY = "2";
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpAuditService.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final TransactionalProducer transactionalProducer;
@@ -52,7 +52,7 @@ public class HttpAuditService {
             kafkaLog.setResponseBody(responseBody);
             transactionalProducer.sendInTransaction(
                     applicationProperties.getKafkaTopic(),
-                    "2",
+                    KAFKA_LOG_KEY,
                     objectMapper.writeValueAsString(kafkaLog)
             );
         } catch (JsonProcessingException e) {
@@ -79,7 +79,7 @@ public class HttpAuditService {
             kafkaLog.setResponseBody(responseBody);
             transactionalProducer.sendInTransaction(
                     applicationProperties.getKafkaTopic(),
-                    "2",
+                    KAFKA_LOG_KEY,
                     objectMapper.writeValueAsString(kafkaLog)
             );
         } catch (JsonProcessingException e) {
