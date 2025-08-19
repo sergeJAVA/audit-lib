@@ -47,7 +47,7 @@ class HttpAuditServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(applicationProperties.getKafkaTopic()).thenReturn(KAFKA_TOPIC);
+        when(applicationProperties.getKafkaRequestTopic()).thenReturn(KAFKA_TOPIC);
     }
 
     @Test

@@ -26,7 +26,7 @@ import java.util.UUID;
 @Aspect
 public class AuditLogAspect {
 
-    private final static String METHOD_LOG_KEY = "1";
+    private final static String KAFKA_METHOD_KEY = "1";
     private final static Logger LOGGER = LoggerFactory.getLogger(AuditLogAspect.class);
     private static final ThreadLocal<String> ID = ThreadLocal.withInitial(() -> UUID.randomUUID().toString());
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -62,8 +62,8 @@ public class AuditLogAspect {
             methodLog.createStartLog(time, logLevel.toString(), "START", id, methodName, args);
             try {
                 transactionalProducer.sendInTransaction(
-                        applicationProperties.getKafkaTopic(),
-                        METHOD_LOG_KEY,
+                        applicationProperties.getKafkaMethodTopic(),
+                        KAFKA_METHOD_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {
@@ -91,8 +91,8 @@ public class AuditLogAspect {
             methodLog.createEndLog(time, logLevel.toString(), "END", id, methodName, result);
             try {
                 transactionalProducer.sendInTransaction(
-                        applicationProperties.getKafkaTopic(),
-                        METHOD_LOG_KEY,
+                        applicationProperties.getKafkaMethodTopic(),
+                        KAFKA_METHOD_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {
@@ -122,8 +122,8 @@ public class AuditLogAspect {
             methodLog.createErrorLog(time, logLevel.toString(), "ERROR", id, methodName, exception.getMessage());
             try {
                 transactionalProducer.sendInTransaction(
-                        applicationProperties.getKafkaTopic(),
-                        METHOD_LOG_KEY,
+                        applicationProperties.getKafkaMethodTopic(),
+                        KAFKA_METHOD_KEY,
                         objectMapper.writeValueAsString(methodLog)
                 );
             } catch (JsonProcessingException e) {
