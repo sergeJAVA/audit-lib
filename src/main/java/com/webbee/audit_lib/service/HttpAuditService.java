@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  */
 public class HttpAuditService {
 
-    private static final String KAFKA_LOG_KEY = "2";
+    private static final String KAFKA_REQUEST_KEY = "2";
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpAuditService.class);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final TransactionalProducer transactionalProducer;
@@ -51,8 +51,8 @@ public class HttpAuditService {
             kafkaLog.setRequestBody(requestBody);
             kafkaLog.setResponseBody(responseBody);
             transactionalProducer.sendInTransaction(
-                    applicationProperties.getKafkaTopic(),
-                    KAFKA_LOG_KEY,
+                    applicationProperties.getKafkaRequestTopic(),
+                    KAFKA_REQUEST_KEY,
                     objectMapper.writeValueAsString(kafkaLog)
             );
         } catch (JsonProcessingException e) {
@@ -78,8 +78,8 @@ public class HttpAuditService {
             kafkaLog.setRequestBody(requestBody);
             kafkaLog.setResponseBody(responseBody);
             transactionalProducer.sendInTransaction(
-                    applicationProperties.getKafkaTopic(),
-                    KAFKA_LOG_KEY,
+                    applicationProperties.getKafkaRequestTopic(),
+                    KAFKA_REQUEST_KEY,
                     objectMapper.writeValueAsString(kafkaLog)
             );
         } catch (JsonProcessingException e) {
